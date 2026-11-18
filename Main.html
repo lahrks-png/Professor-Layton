@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guida Facile: Il Professor Layton e il Nuovo Mondo a Vapore su Mac</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Cinzel (titoli steampunk/eleganti) e Plus Jakarta Sans (testo ad altissima leggibilità) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome per icone chiare e intuitive -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cinzel', 'Georgia', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        steampunk: {
+                            navy: '#141B29',
+                            slate: '#1E293B',
+                            brass: '#C59B27',
+                            brassLight: '#E5C158',
+                            brassDark: '#9A7414',
+                            parchment: '#FAF6EE',
+                            parchmentDark: '#F0E7D5',
+                            ink: '#292218',
+                            copper: '#B45309'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Sfondo sottile con motivo geometrico ispirato agli ingranaggi/enigmi */
+        .bg-steampunk-pattern {
+            background-color: #141B29;
+            background-image: radial-gradient(rgba(197, 155, 39, 0.12) 1px, transparent 1px),
+                              radial-gradient(rgba(197, 155, 39, 0.08) 1px, #141B29 1px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+        }
+
+        /* Effetto bordo doppia cornice stile taccuino di Layton */
+        .layton-card {
+            background-color: #FAF6EE;
+            border: 1px solid #DFD3BC;
+            box-shadow: 0 10px 25px -5px rgba(20, 27, 41, 0.08), 0 4px 10px -2px rgba(20, 27, 41, 0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .layton-card.completed {
+            border-color: #16A34A;
+            background-color: #F7FBF8;
+        }
+
+        /* Custom checkbox animata */
+        .step-checkbox:checked + div {
+            background-color: #16A34A;
+            border-color: #16A34A;
+        }
+        .step-checkbox:checked + div svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Animazione fluida per accordion FAQ */
+        .faq-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
+        }
+        .faq-item.open .faq-content {
+            grid-template-rows: 1fr;
+        }
+        .faq-inner {
+            overflow: hidden;
+        }
+        .faq-item.open .faq-chevron {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-[#F4EFE6] text-steampunk-ink font-sans antialiased selection:bg-steampunk-brass selection:text-white">
+
+    <!-- BARRA SUPERIORE FISSA CON PROGRESSO -->
+    <header class="sticky top-0 z-40 bg-steampunk-navy/95 backdrop-blur-md border-b border-steampunk-brass/30 text-white shadow-lg">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-steampunk-brass/20 border border-steampunk-brass flex items-center justify-center text-steampunk-brassLight">
+                    <i class="fa-solid fa-hat-wizard text-base"></i>
+                </div>
+                <div>
+                    <span class="font-serif font-bold text-sm sm:text-base tracking-wide text-steampunk-brassLight block leading-tight">
+                        Guida Layton su Mac
+                    </span>
+                    <span class="text-xs text-slate-300 hidden sm:inline">Edizione semplice • Passo dopo passo</span>
+                </div>
+            </div>
+
+            <!-- Indicatore di avanzamento interattivo -->
+            <div class="flex items-center gap-3 bg-slate-800/80 px-3.5 py-1.5 rounded-full border border-slate-700">
+                <div class="text-xs sm:text-sm font-medium">
+                    Progresso: <span id="progress-text" class="text-steampunk-brassLight font-bold">0 di 6</span>
+                </div>
+                <div class="w-20 sm:w-28 h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-steampunk-brass to-emerald-400 transition-all duration-500 rounded-full" style="width: 0%"></div>
+                </div>
+                <button onclick="resetProgress()" title="Azzera i progressi" class="text-xs text-slate-400 hover:text-white transition p-1" aria-label="Azzera progressi">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="bg-steampunk-pattern text-white pt-12 pb-16 sm:pt-16 sm:pb-20 px-4 sm:px-6 border-b-4 border-steampunk-brass relative overflow-hidden">
+        <!-- Decorazione ingranaggio sullo sfondo -->
+        <div class="absolute -right-16 -top-16 text-steampunk-brass/10 text-[220px] pointer-events-none select-none">
+            <i class="fa-solid fa-gear fa-spin" style="animation-duration: 60s;"></i>
+        </div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-steampunk-brass/20 border border-steampunk-brass/50 text-steampunk-brassLight text-xs sm:text-sm font-semibold mb-5">
+                <i class="fa-solid fa-sparkles"></i>
+                <span>100% Gratuito • Nessun codice da scrivere</span>
+            </div>
+
+            <h1 class="font-serif text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4">
+                Gioca a <span class="text-steampunk-brassLight">Il Professor Layton e il Nuovo Mondo a Vapore</span> sul tuo Mac
+            </h1>
+
+            <p class="text-base sm:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed mb-8">
+                Anche se il gioco esce solo per Windows e console, puoi avviarlo facilmente sul tuo MacBook. <strong class="text-white">Niente Terminale, niente comandi complicati:</strong> segui questi 6 passaggi con il mouse, come installare una normale app.
+            </p>
+
+            <!-- Badge Requisiti Minimi -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-left">
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3.5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-steampunk-brass/20 text-steampunk-brassLight flex items-center justify-center shrink-0 text-lg">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Chip Mac</div>
+                        <div class="text-sm font-bold text-white">Apple M1, M2, M3 o M4</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3.5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-steampunk-brass/20 text-steampunk-brassLight flex items-center justify-center shrink-0 text-lg">
+                        <i class="fa-brands fa-apple"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Sistema</div>
+                        <div class="text-sm font-bold text-white">macOS Sonoma / Sequoia</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3.5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-steampunk-brass/20 text-steampunk-brassLight flex items-center justify-center shrink-0 text-lg">
+                        <i class="fa-solid fa-hard-drive"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Spazio Libero</div>
+                        <div class="text-sm font-bold text-white">Circa 30 GB su disco</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENUTO PRINCIPALE -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-14">
+
+        <!-- SEZIONE 1: GLOSSARIO "SENZA PANICO" -->
+        <section aria-labelledby="glossary-heading">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-steampunk-copper">Prima di iniziare</span>
+                    <h2 id="glossary-heading" class="font-serif text-2xl sm:text-3xl font-bold text-steampunk-navy">
+                        Piccolo Glossario "Senza Panico"
+                    </h2>
+                </div>
+                <p class="text-sm text-stone-600">3 parole strane che vedrai a schermo, spiegate in modo semplice.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Card Glossario 1 -->
+                <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm hover:border-steampunk-brass transition">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3 text-lg">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-steampunk-navy mb-1">1. Heroic Launcher</h3>
+                    <p class="text-sm text-stone-600 leading-relaxed">
+                        È l'unica app che installerai sul Mac. Funziona come una <strong>"scatola magica"</strong> gratuita che ti permette di aprire programmi pensati per Windows direttamente su macOS.
+                    </p>
+                </div>
+
+                <!-- Card Glossario 2 -->
+                <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm hover:border-steampunk-brass transition">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center mb-3 text-lg">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-steampunk-navy mb-1">2. Wine / GPTK</h3>
+                    <p class="text-sm text-stone-600 leading-relaxed">
+                        È il <strong>"traduttore simultaneo"</strong> interno a Heroic. Mentre giochi, traduce al volo la lingua di Windows nella lingua grafica del tuo MacBook, senza rallentamenti.
+                    </p>
+                </div>
+
+                <!-- Card Glossario 3 -->
+                <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm hover:border-steampunk-brass transition">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-3 text-lg">
+                        <i class="fa-solid fa-folder-tree"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-steampunk-navy mb-1">3. Prefix (Cartella C:)</h3>
+                    <p class="text-sm text-stone-600 leading-relaxed">
+                        È una <strong>finta cartella di Windows</strong> nascosta dentro il tuo Mac. Serve per far credere a Steam di essere installato su un vero PC Windows.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 2: GUIDA PASSO-PASSO (6 STEP) -->
+        <section id="guida-step" aria-labelledby="steps-heading">
+            <div class="mb-6">
+                <span class="text-xs font-bold uppercase tracking-widest text-steampunk-copper">La procedura completa</span>
+                <h2 id="steps-heading" class="font-serif text-2xl sm:text-3xl font-bold text-steampunk-navy">
+                    I 6 Passaggi per Giocare
+                </h2>
+                <p class="text-sm sm:text-base text-stone-600 mt-1">
+                    Spunta la casella a destra man mano che completi ogni passaggio: il tuo progresso viene salvato automaticamente nel browser.
+                </p>
+            </div>
+
+            <div class="space-y-6" id="steps-container">
+
+                <!-- STEP 1 -->
+                <article class="layton-card rounded-2xl p-5 sm:p-7 relative" data-step="1">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-9 h-9 rounded-full bg-steampunk-navy text-steampunk-brassLight font-serif font-bold flex items-center justify-center shrink-0 text-lg shadow">
+                                1
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold text-steampunk-copper uppercase tracking-wider">Tempo stimato: 3 minuti</span>
+                                <h3 class="text-lg sm:text-xl font-bold text-steampunk-navy">Installa Heroic Games Launcher</h3>
+                            </div>
+                        </div>
+                        <!-- Checkbox progresso -->
+                        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-xl border border-stone-200 hover:border-steampunk-brass transition">
+                            <input type="checkbox" class="step-checkbox sr-only" data-step-id="1" onchange="toggleStep(1)">
+                            <div class="w-6 h-6 rounded-lg border-2 border-stone-300 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-white opacity-0 transform scale-50 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-stone-700 hidden sm:inline">Fatto</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4 text-stone-700 space-y-3 text-sm sm:text-base leading-relaxed">
+                        <p>
+                            Vai sul sito ufficiale <a href="https://heroicgameslauncher.com/downloads" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline font-semibold hover:text-blue-900">heroicgameslauncher.com/downloads <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a> e scarica la versione per <strong>macOS (Apple Silicon / ARM64)</strong>.
+                        </p>
+                        <ol class="list-decimal list-inside space-y-2 pl-1">
+                            <li>Apri il file <code>.dmg</code> scaricato e trascina l'icona di <strong>Heroic</strong> dentro la cartella <strong>Applicazioni</strong>.</li>
+                            <li>Apri la cartella <em>Applicazioni</em> e fai <strong>doppio clic</strong> su Heroic.</li>
+                            <li>Se il Mac ti chiede di installare <strong>Rosetta 2</strong>, clicca su <strong>Installa</strong> e attendi qualche secondo (serve al Mac per capire le app Windows).</li>
+                        </ol>
+
+                        <div class="bg-amber-50 border-l-4 border-steampunk-brass p-3.5 rounded-r-xl text-xs sm:text-sm text-amber-950">
+                            <strong><i class="fa-solid fa-shield-halved mr-1"></i> Se macOS blocca l'apertura:</strong> È normalissimo perché Heroic non viene dall'App Store. Fai <strong>Clic destro</strong> (oppure tocca con due dita sul trackpad) sopra l'icona di Heroic e scegli <strong>Apri</strong> dal menu, poi conferma cliccando di nuovo su <strong>Apri</strong>.
+                        </div>
+                    </div>
+                </article>
+
+                <!-- STEP 2 -->
+                <article class="layton-card rounded-2xl p-5 sm:p-7 relative" data-step="2">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-9 h-9 rounded-full bg-steampunk-navy text-steampunk-brassLight font-serif font-bold flex items-center justify-center shrink-0 text-lg shadow">
+                                2
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold text-steampunk-copper uppercase tracking-wider">Tempo stimato: 4 minuti</span>
+                                <h3 class="text-lg sm:text-xl font-bold text-steampunk-navy">Scarica il "motore" Wine dentro Heroic</h3>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-xl border border-stone-200 hover:border-steampunk-brass transition">
+                            <input type="checkbox" class="step-checkbox sr-only" data-step-id="2" onchange="toggleStep(2)">
+                            <div class="w-6 h-6 rounded-lg border-2 border-stone-300 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-white opacity-0 transform scale-50 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-stone-700 hidden sm:inline">Fatto</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4 text-stone-700 space-y-3 text-sm sm:text-base leading-relaxed">
+                        <p>Ora dobbiamo scaricare il "traduttore" che permetterà a Heroic di far partire i giochi Windows:</p>
+                        <ol class="list-decimal list-inside space-y-2 pl-1">
+                            <li>All'interno di Heroic, guarda il menu sulla sinistra e clicca su <strong>Gestore Wine</strong> (o <em>Wine Manager</em>).</li>
+                            <li>In alto vedrai delle schede: clicca su <strong>Game-Porting-Toolkit</strong> (oppure su <strong>Wine-Staging</strong> se la prima non è presente).</li>
+                            <li>Clicca sull'icona della <strong>freccia verso il basso (Scarica)</strong> accanto alla versione più recente in cima alla lista e attendi che finisca.</li>
+                        </ol>
+                    </div>
+                </article>
+
+                <!-- STEP 3 -->
+                <article class="layton-card rounded-2xl p-5 sm:p-7 relative" data-step="3">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-9 h-9 rounded-full bg-steampunk-navy text-steampunk-brassLight font-serif font-bold flex items-center justify-center shrink-0 text-lg shadow">
+                                3
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold text-steampunk-copper uppercase tracking-wider">Tempo stimato: 2 minuti</span>
+                                <h3 class="text-lg sm:text-xl font-bold text-steampunk-navy">Scarica Steam in versione Windows</h3>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-xl border border-stone-200 hover:border-steampunk-brass transition">
+                            <input type="checkbox" class="step-checkbox sr-only" data-step-id="3" onchange="toggleStep(3)">
+                            <div class="w-6 h-6 rounded-lg border-2 border-stone-300 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-white opacity-0 transform scale-50 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-stone-700 hidden sm:inline">Fatto</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4 text-stone-700 space-y-3 text-sm sm:text-base leading-relaxed">
+                        <p>
+                            Vai sulla pagina di download di Steam (<a href="https://store.steampowered.com/about/" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline font-semibold hover:text-blue-900">store.steampowered.com/about <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>).
+                        </p>
+                        <div class="bg-red-50 border-l-4 border-red-500 p-3.5 rounded-r-xl text-xs sm:text-sm text-red-950">
+                            <strong><i class="fa-solid fa-triangle-exclamation mr-1"></i> Attenzione a questo dettaglio:</strong> Il sito riconoscerà che hai un Mac e ti proporrà il pulsante grande per macOS. <strong>Non usarlo!</strong> Cerca invece la piccola icona di <strong>Windows</strong> sotto il pulsante principale per scaricare il file chiamato <code>SteamSetup.exe</code>.
+                        </div>
+                        <p class="text-sm text-stone-600">
+                            Non fare doppio clic su <code>SteamSetup.exe</code> nel Finder (il Mac non saprebbe aprirlo da solo): lo installeremo nel prossimo passaggio dentro Heroic.
+                        </p>
+                    </div>
+                </article>
+
+                <!-- STEP 4 -->
+                <article class="layton-card rounded-2xl p-5 sm:p-7 relative" data-step="4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-9 h-9 rounded-full bg-steampunk-navy text-steampunk-brassLight font-serif font-bold flex items-center justify-center shrink-0 text-lg shadow">
+                                4
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold text-steampunk-copper uppercase tracking-wider">Tempo stimato: 4 minuti</span>
+                                <h3 class="text-lg sm:text-xl font-bold text-steampunk-navy">Installa Steam dentro Heroic</h3>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-xl border border-stone-200 hover:border-steampunk-brass transition">
+                            <input type="checkbox" class="step-checkbox sr-only" data-step-id="4" onchange="toggleStep(4)">
+                            <div class="w-6 h-6 rounded-lg border-2 border-stone-300 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-white opacity-0 transform scale-50 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-stone-700 hidden sm:inline">Fatto</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4 text-stone-700 space-y-3 text-sm sm:text-base leading-relaxed">
+                        <ol class="list-decimal list-inside space-y-2.5 pl-1">
+                            <li>Torna in <strong>Heroic</strong>, vai nella scheda <strong>Libreria</strong> e clicca sul pulsante <strong>Aggiungi gioco</strong> (<em>Add Game</em>) in alto.</li>
+                            <li>Nel campo <strong>Titolo</strong> scrivi semplicemente <code>Steam</code> e assicurati che come piattaforma sia selezionato <strong>Windows</strong>.</li>
+                            <li>Scorri leggermente verso il basso fino a <strong>Versione Wine</strong> e seleziona dal menu il motore che hai scaricato nello Step 2.</li>
+                            <li>Clicca sul pulsante <strong>Esegui installer prima</strong> (<em>Run Installer First</em>), seleziona il file <code>SteamSetup.exe</code> dalla tua cartella <em>Download</em> e clicca su <strong>Apri</strong>.</li>
+                            <li>Apparirà la classica finestra di installazione di Windows: clicca su <strong>Avanti → Installa → Fine</strong> (togli la spunta da "Avvia Steam" se presente, oppure chiudilo dopo l'installazione).</li>
+                        </ol>
+                    </div>
+                </article>
+
+                <!-- STEP 5 -->
+                <article class="layton-card rounded-2xl p-5 sm:p-7 relative" data-step="5">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-9 h-9 rounded-full bg-steampunk-navy text-steampunk-brassLight font-serif font-bold flex items-center justify-center shrink-0 text-lg shadow">
+                                5
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold text-steampunk-copper uppercase tracking-wider">Tempo stimato: 2 minuti</span>
+                                <h3 class="text-lg sm:text-xl font-bold text-steampunk-navy">Collega il pulsante di avvio (steam.exe)</h3>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-xl border border-stone-200 hover:border-steampunk-brass transition">
+                            <input type="checkbox" class="step-checkbox sr-only" data-step-id="5" onchange="toggleStep(5)">
+                            <div class="w-6 h-6 rounded-lg border-2 border-stone-300 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-white opacity-0 transform scale-50 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-stone-700 hidden sm:inline">Fatto</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4 text-stone-700 space-y-3 text-sm sm:text-base leading-relaxed">
+                        <p>
+                            Ora devi dire a Heroic dove si trova il programma appena installato:
+                        </p>
+                        <ol class="list-decimal list-inside space-y-2 pl-1">
+                            <li>Sempre nella stessa finestra di Heroic, cerca il campo <strong>Seleziona eseguibile</strong> (<em>Select Executable</em>) e clicca sull'icona della cartella accanto.</li>
+                            <li>Segui questo percorso cliccando sulle cartelle una dentro l'altra: <br>
+                                <span class="inline-block mt-1 font-medium text-steampunk-navy">La tua cartella Utente → Games → Heroic → Prefixes → default → Steam → drive_c → Program Files (x86) → Steam</span>
+                            </li>
+                            <li>Seleziona il file chiamato <strong><code>steam.exe</code></strong>, clicca su <strong>Apri</strong> e infine clicca su <strong>Fine / Salva</strong> in basso.</li>
+                        </ol>
+
+                        <!-- Box Percorso Copiabile -->
+                        <div class="bg-steampunk-navy text-slate-200 p-3.5 rounded-xl border border-slate-700 mt-3">
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <span class="text-xs text-steampunk-brassLight font-semibold uppercase tracking-wider">
+                                    <i class="fa-solid fa-compass mr-1"></i> Percorso completo (per riferimento rapido)
+                                </span>
+                                <button onclick="copyPath(this)" data-path="~/Games/Heroic/Prefixes/default/Steam/drive_c/Program Files (x86)/Steam/steam.exe" class="bg-steampunk-brass hover:bg-steampunk-brassLight text-steampunk-navy font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span>Copia percorso</span>
+                                </button>
+                            </div>
+                            <code class="text-xs sm:text-sm text-emerald-300 break-all block font-mono bg-slate-900/70 p-2 rounded-lg">
+                                ~/Games/Heroic/Prefixes/default/Steam/drive_c/Program Files (x86)/Steam/steam.exe
+                            </code>
+                            <p class="text-xs text-slate-400 mt-2">
+                                <i class="fa-solid fa-lightbulb text-steampunk-brassLight mr-1"></i> <strong>Trucco Mac:</strong> Quando si apre la finestra di selezione file, puoi premere sulla tastiera <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-white">Cmd ⌘</kbd> + <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-white">Shift ⇧</kbd> + <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-white">G</kbd>, incollare il percorso qui sopra e premere Invio!
+                            </p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- STEP 6 -->
+                <article class="layton-card rounded-2xl p-5 sm:p-7 relative" data-step="6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-9 h-9 rounded-full bg-steampunk-navy text-steampunk-brassLight font-serif font-bold flex items-center justify-center shrink-0 text-lg shadow">
+                                6
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold text-steampunk-copper uppercase tracking-wider">Il momento clou!</span>
+                                <h3 class="text-lg sm:text-xl font-bold text-steampunk-navy">Apri Steam, scarica Professor Layton e gioca</h3>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0 bg-white px-3 py-2 rounded-xl border border-stone-200 hover:border-steampunk-brass transition">
+                            <input type="checkbox" class="step-checkbox sr-only" data-step-id="6" onchange="toggleStep(6)">
+                            <div class="w-6 h-6 rounded-lg border-2 border-stone-300 flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 text-white opacity-0 transform scale-50 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-stone-700 hidden sm:inline">Fatto</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4 text-stone-700 space-y-3 text-sm sm:text-base leading-relaxed">
+                        <ol class="list-decimal list-inside space-y-2 pl-1">
+                            <li>Nella <strong>Libreria di Heroic</strong> clicca sulla scheda <strong>Steam</strong> e premi il pulsante <strong>Gioca ora</strong>.</li>
+                            <li>Al primo avvio Steam scaricherà i suoi aggiornamenti (attendi 2-3 minuti), poi ti mostrerà la schermata di login: inserisci il tuo account Steam (o inquadra il QR Code con l'app Steam del telefono).</li>
+                            <li>Cerca <strong>"Il professor Layton e il Nuovo Mondo a vapore"</strong> nel negozio di Steam (disponibile dal <strong>9–10 dicembre 2026</strong>), acquistalo, scaricalo e premi il pulsante verde <strong>Gioca</strong>!</li>
+                        </ol>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            <div class="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl text-xs sm:text-sm text-emerald-950">
+                                <strong class="block mb-1"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Salvataggi al sicuro:</strong>
+                                Quando smetti di giocare, esci prima dal menu interno del gioco, attendi 5 secondi che Steam sincronizzi la nuvola (<em>Steam Cloud</em>) e poi chiudi Steam.
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 p-3.5 rounded-xl text-xs sm:text-sm text-blue-950">
+                                <strong class="block mb-1"><i class="fa-solid fa-repeat mr-1"></i> Nei giorni successivi:</strong>
+                                Non dovrai rifare nulla! Apri <strong>Heroic → Steam → Gioca ora</strong> e poi avvia il gioco da dentro Steam.
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- SEZIONE 3: RISOLUZIONE PROBLEMI COMUNI (FAQ INTERATTIVA) -->
+        <section aria-labelledby="faq-heading" class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-steampunk-copper">Aiuto rapido</span>
+                    <h2 id="faq-heading" class="font-serif text-2xl sm:text-3xl font-bold text-steampunk-navy">
+                        Domande Frequenti e Imprevisti
+                    </h2>
+                </div>
+
+                <!-- Ricerca rapida nelle FAQ -->
+                <div class="relative w-full md:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
+                    <input type="text" id="faq-search" oninput="filterFaqs()" placeholder="Cerca un problema (es. nera, controller)..." class="w-full pl-9 pr-4 py-2.5 text-sm bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-steampunk-brass focus:ring-2 focus:ring-steampunk-brass/20 transition">
+                </div>
+            </div>
+
+            <div class="divide-y divide-stone-200" id="faq-list">
+
+                <!-- FAQ 1 -->
+                <div class="faq-item py-4" data-keywords="danneggiata non verificata sicurezza blocca apple">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between text-left gap-4 py-1 font-bold text-steampunk-navy hover:text-steampunk-copper transition cursor-pointer">
+                        <span class="text-base sm:text-lg">1. macOS dice che l'app è "danneggiata" o "non verificata"</span>
+                        <i class="fa-solid fa-chevron-down faq-chevron text-steampunk-brass transition-transform duration-300 shrink-0"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="pt-3 text-sm sm:text-base text-stone-600 leading-relaxed">
+                                È una protezione standard di Apple per le app scaricate fuori dall'App Store. Vai in <strong>Impostazioni di Sistema → Privacy e sicurezza</strong>, scorri fino in fondo e troverai un messaggio che dice <em>"Heroic è stato bloccato"</em>: clicca sul pulsante <strong>Apri comunque</strong> e inserisci la password del tuo Mac.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item py-4" data-keywords="finestra steam nera vuota bloccata caricamento">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between text-left gap-4 py-1 font-bold text-steampunk-navy hover:text-steampunk-copper transition cursor-pointer">
+                        <span class="text-base sm:text-lg">2. La finestra di Steam resta nera o sembra bloccata al primo avvio</span>
+                        <i class="fa-solid fa-chevron-down faq-chevron text-steampunk-brass transition-transform duration-300 shrink-0"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="pt-3 text-sm sm:text-base text-stone-600 leading-relaxed">
+                                Al primo avvio Steam scarica in background circa 300 MB di aggiornamenti dell'interfaccia: <strong>aspetta 2 o 3 minuti senza chiuderlo</strong>. Se dopo 5 minuti resta ancora completamente nero, chiudi Steam, vai nelle impostazioni di Steam dentro Heroic e prova ad attivare o disattivare l'opzione <strong>Usa DXVK / D3DMetal</strong>. (Nota: evita di cambiare versione di Wine dopo aver già installato Steam, altrimenti dovrai reinstallarlo).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item py-4" data-keywords="controller joypad switch pro ps5 xbox bluetooth">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between text-left gap-4 py-1 font-bold text-steampunk-navy hover:text-steampunk-copper transition cursor-pointer">
+                        <span class="text-base sm:text-lg">3. Posso usare un controller (Nintendo Switch, PS5, Xbox)?</span>
+                        <i class="fa-solid fa-chevron-down faq-chevron text-steampunk-brass transition-transform duration-300 shrink-0"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="pt-3 text-sm sm:text-base text-stone-600 leading-relaxed">
+                                <strong>Sì, assolutamente!</strong> Collega prima il controller al Mac tramite <strong>Impostazioni di Sistema → Bluetooth</strong> (macOS supporta nativamente DualSense PS5, controller Xbox e Nintendo Switch Pro Controller). Una volta connesso al Mac, Steam lo riconoscerà automaticamente all'avvio. Naturalmente puoi giocare anche con il trackpad o un normale mouse.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="faq-item py-4" data-keywords="non parte errore rimborso vmware fusion piano b">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between text-left gap-4 py-1 font-bold text-steampunk-navy hover:text-steampunk-copper transition cursor-pointer">
+                        <span class="text-base sm:text-lg">4. E se il gioco non dovesse partire al lancio? (Rimborso e Piano B)</span>
+                        <i class="fa-solid fa-chevron-down faq-chevron text-steampunk-brass transition-transform duration-300 shrink-0"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <div class="pt-3 text-sm sm:text-base text-stone-600 leading-relaxed space-y-2">
+                                <p>
+                                    Il gioco è verificato per funzionare su Steam Deck (che usa lo stesso identico sistema Wine di Heroic), quindi ha ottime probabilità di funzionare al primo colpo.
+                                </p>
+                                <p>
+                                    Tuttavia, se al lancio dovesse esserci un blocco tecnico:
+                                </p>
+                                <ul class="list-disc list-inside pl-2 space-y-1">
+                                    <li><strong>Sei tutelato dal rimborso Steam:</strong> Puoi chiedere il rimborso completo entro <strong>14 giorni</strong> dall'acquisto se hai giocato meno di 2 ore.</li>
+                                    <li><strong>Piano B gratuito:</strong> Puoi installare gratuitamente <strong>VMware Fusion</strong> (per uso personale), che crea un vero Windows 11 dentro il tuo Mac senza bisogno di traduttori.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <p id="faq-empty" class="hidden text-center text-stone-500 text-sm py-6">
+                Nessuna domanda trovata con questa parola chiave. Prova a cercare "Steam", "controller" o "rimborso".
+            </p>
+        </section>
+
+        <!-- SEZIONE 4: TABELLA ALTERNATIVE (COMPATTA) -->
+        <section aria-labelledby="alt-heading">
+            <div class="mb-5">
+                <span class="text-xs font-bold uppercase tracking-widest text-steampunk-copper">Confronto rapido</span>
+                <h2 id="alt-heading" class="font-serif text-2xl font-bold text-steampunk-navy">
+                    Altre opzioni per giocare su Mac
+                </h2>
+            </div>
+
+            <div class="overflow-x-auto bg-white rounded-2xl border border-stone-200 shadow-sm">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-steampunk-navy text-white">
+                            <th class="p-4 font-serif font-semibold">Soluzione</th>
+                            <th class="p-4 font-serif font-semibold">Costo</th>
+                            <th class="p-4 font-serif font-semibold">Difficoltà</th>
+                            <th class="p-4 font-serif font-semibold">Quando sceglierla</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-200">
+                        <tr class="bg-amber-50/60">
+                            <td class="p-4 font-bold text-steampunk-navy">
+                                Heroic Games Launcher
+                                <span class="ml-1.5 inline-block px-2 py-0.5 text-[11px] font-bold bg-steampunk-brass text-steampunk-navy rounded-full">Consigliato</span>
+                            </td>
+                            <td class="p-4 font-semibold text-emerald-700">Gratis</td>
+                            <td class="p-4">Facile (tutto visuale)</td>
+                            <td class="p-4 text-stone-600">La scelta migliore per iniziare senza spendere nulla e senza usare comandi.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-bold text-steampunk-navy">Sikarugir <span class="text-xs font-normal text-stone-500">(ex Kegworks)</span></td>
+                            <td class="p-4 font-semibold text-emerald-700">Gratis</td>
+                            <td class="p-4">Media / Avanzata</td>
+                            <td class="p-4 text-stone-600">Ottima alternativa open-source se Heroic richiede componenti extra di Windows.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-bold text-steampunk-navy">CrossOver</td>
+                            <td class="p-4 text-stone-700">A pagamento <span class="text-xs text-stone-500">(14 gg gratis)</span></td>
+                            <td class="p-4">Molto facile</td>
+                            <td class="p-4 text-stone-600">Soluzione commerciale "clicca e gioca" sempre aggiornata all'ultima versione di Steam.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-steampunk-navy text-slate-400 py-8 px-4 border-t border-steampunk-brass/30 text-center text-xs sm:text-sm">
+        <div class="max-w-4xl mx-auto space-y-2">
+            <p class="text-slate-300 font-medium">
+                Guida non ufficiale realizzata per aiutare i giocatori Mac a vivere le avventure del Professor Layton.
+            </p>
+            <p>
+                <em>Il professor Layton e il Nuovo Mondo a vapore</em> è un marchio di LEVEL-5 Inc. Tutti i marchi citati appartengono ai rispettivi proprietari.
+            </p>
+        </div>
+    </footer>
+
+    <!-- NOTIFICA TOAST (sostituisce alert()) -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-steampunk-navy text-white px-4 py-3 rounded-xl shadow-xl border border-steampunk-brass flex items-center gap-2.5 text-sm font-medium">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+            <span id="toast-message">Percorso copiato negli appunti!</span>
+        </div>
+    </div>
+
+    <!-- LOGICA JAVASCRIPT INTERATTIVA -->
+    <script>
+        const TOTAL_STEPS = 6;
+        const STORAGE_KEY = 'layton_mac_guide_steps_v1';
+
+        // Carica i progressi salvati all'avvio
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+        });
+
+        function getSavedSteps() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveSteps(stepsArray) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(stepsArray));
+            } catch (e) {
+                // Ignora errori di storage in modalità privata restrittiva
+            }
+        }
+
+        function loadProgress() {
+            const completed = getSavedSteps();
+            for (let i = 1; i <= TOTAL_STEPS; i++) {
+                const isDone = completed.includes(i);
+                const checkbox = document.querySelector(`.step-checkbox[data-step-id="${i}"]`);
+                const card = document.querySelector(`article[data-step="${i}"]`);
+                if (checkbox) checkbox.checked = isDone;
+                if (card) {
+                    if (isDone) card.classList.add('completed');
+                    else card.classList.remove('completed');
+                }
+            }
+            updateProgressBar(completed.length);
+        }
+
+        function toggleStep(stepId) {
+            let completed = getSavedSteps();
+            const checkbox = document.querySelector(`.step-checkbox[data-step-id="${stepId}"]`);
+            const card = document.querySelector(`article[data-step="${stepId}"]`);
+
+            if (checkbox && checkbox.checked) {
+                if (!completed.includes(stepId)) completed.push(stepId);
+                if (card) card.classList.add('completed');
+                if (completed.length === TOTAL_STEPS) {
+                    showToast('Complimenti! Hai completato tutti e 6 i passaggi!');
+                }
+            } else {
+                completed = completed.filter(id => id !== stepId);
+                if (card) card.classList.remove('completed');
+            }
+
+            saveSteps(completed);
+            updateProgressBar(completed.length);
+        }
+
+        function updateProgressBar(count) {
+            const percentage = Math.round((count / TOTAL_STEPS) * 100);
+            const textEl = document.getElementById('progress-text');
+            const barEl = document.getElementById('progress-bar');
+            if (textEl) textEl.textContent = `${count} di ${TOTAL_STEPS}`;
+            if (barEl) barEl.style.width = `${percentage}%`;
+        }
+
+        function resetProgress() {
+            saveSteps([]);
+            loadProgress();
+            showToast('Progresso azzerato.');
+        }
+
+        // Copia percorso negli appunti (compatibile con iFrame tramite textarea fallback)
+        function copyPath(buttonEl) {
+            const pathText = buttonEl.getAttribute('data-path');
+            const tempInput = document.createElement('textarea');
+            tempInput.value = pathText;
+            tempInput.style.position = 'fixed';
+            tempInput.style.opacity = '0';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+
+            try {
+                document.execCommand('copy');
+                const span = buttonEl.querySelector('span');
+                const icon = buttonEl.querySelector('i');
+                const originalText = span.textContent;
+
+                span.textContent = 'Copiato!';
+                icon.className = 'fa-solid fa-check';
+                buttonEl.classList.replace('bg-steampunk-brass', 'bg-emerald-400');
+
+                showToast('Percorso copiato! Ora puoi incollarlo con Cmd + V.');
+
+                setTimeout(() => {
+                    span.textContent = originalText;
+                    icon.className = 'fa-regular fa-copy';
+                    buttonEl.classList.replace('bg-emerald-400', 'bg-steampunk-brass');
+                }, 2500);
+            } catch (err) {
+                showToast('Impossibile copiare automaticamente, seleziona il testo manualmente.');
+            } finally {
+                document.body.removeChild(tempInput);
+            }
+        }
+
+        // Gestione Accordion FAQ
+        function toggleFaq(buttonEl) {
+            const item = buttonEl.closest('.faq-item');
+            item.classList.toggle('open');
+        }
+
+        // Filtro ricerca FAQ
+        function filterFaqs() {
+            const query = document.getElementById('faq-search').value.toLowerCase().trim();
+            const items = document.querySelectorAll('.faq-item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const keywords = (item.getAttribute('data-keywords') || '').toLowerCase();
+                if (text.includes(query) || keywords.includes(query)) {
+                    item.style.display = '';
+                    visibleCount++;
+                    if (query.length > 2) item.classList.add('open');
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            const emptyMsg = document.getElementById('faq-empty');
+            if (visibleCount === 0) emptyMsg.classList.remove('hidden');
+            else emptyMsg.classList.add('hidden');
+        }
+
+        // Mostra notifica Toast
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.textContent = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+    </script>
+</body>
+</html>
